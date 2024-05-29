@@ -7,8 +7,6 @@ import com.github.minfaatong.tool.codeworkbench.handler.IDEButtonClickedEventEve
 import com.github.minfaatong.tool.codeworkbench.listener.ProjectPathChangedListener;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -17,9 +15,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
-import java.io.IOException;
 
 import static com.github.minfaatong.tool.codeworkbench.utils.NotificationUiUtils.showErrorMessage;
 
@@ -67,7 +62,7 @@ public class GitCloneAndOpenProjectFX extends Application {
         btnClone.setOnAction(cloneButtonClickedEventEventHandler);
 
         btnOpenInIDE = new Button("IDE");
-        ImageView imgIDE = new ImageView("IntelliJ_IDEA_Icon.svg.png");
+        ImageView imgIDE = new ImageView("IntelliJ_IDEA_Icon.png");
         imgIDE.setFitWidth(30);
         imgIDE.setFitHeight(30);
         btnOpenInIDE.setGraphic(imgIDE);
