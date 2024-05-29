@@ -7,8 +7,6 @@ module my.assistant {
     requires org.yaml.snakeyaml;
     requires com.google.gson;
 
-    opens com.github.minfaatong.tool.codeworkbench to javafx.fxml;
-
     exports com.github.minfaatong.tool.codeworkbench;
     exports com.github.minfaatong.tool.codeworkbench.config;
     exports com.github.minfaatong.tool.codeworkbench.handler;
