@@ -62,7 +62,7 @@ public class GitCloneAndOpenProjectFX extends Application {
         btnClone.setOnAction(cloneButtonClickedEventEventHandler);
 
         btnOpenInIDE = new Button("IDE");
-        ImageView imgIDE = new ImageView("IntelliJ_IDEA_Icon.png");
+        ImageView imgIDE = new ImageView(getClass().getResource("fxml/IntelliJ_IDEA_Icon.png").toString());
         imgIDE.setFitWidth(30);
         imgIDE.setFitHeight(30);
         btnOpenInIDE.setGraphic(imgIDE);
@@ -74,7 +74,7 @@ public class GitCloneAndOpenProjectFX extends Application {
                 config));
 
         btnOpenInTerm = new Button("TERM");
-        ImageView imgTerm = new ImageView("cmd-terminal-icon.png");
+        ImageView imgTerm = new ImageView(getClass().getResource("fxml/cmd-terminal-icon.png").toString());
         imgTerm.setFitWidth(30);
         imgTerm.setFitHeight(30);
         btnOpenInTerm.setGraphic(imgTerm);
