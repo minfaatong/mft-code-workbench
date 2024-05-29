@@ -1,15 +1,15 @@
 {
-  "rootDir": "E:/git",
-  "workDir": "E:/projs",
+  "rootDir": "",
+  "workDir": "",
   "subDir": [
     {
-      "orgFolderName": "ggerganov",
+      "orgFolderName": "",
       "children": [
         {
-          "folderName": "llama.cpp",
-          "gitUrl": "https://github.com/ggerganov/llama.cpp.git",
-          "folderPrefix": "llmcpp",
-          "desc": "Llama.cpp",
+          "folderName": "",
+          "gitUrl": "",
+          "folderPrefix": "",
+          "desc": "",
           "archived": false
         }
       ]
