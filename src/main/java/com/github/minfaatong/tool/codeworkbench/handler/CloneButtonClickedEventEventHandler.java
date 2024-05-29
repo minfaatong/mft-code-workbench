@@ -11,6 +11,7 @@ import javafx.scene.control.TextField;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -28,7 +29,7 @@ import static com.github.minfaatong.tool.codeworkbench.utils.NotificationUiUtils
 @Slf4j
 @RequiredArgsConstructor
 public class CloneButtonClickedEventEventHandler implements EventHandler<ActionEvent> {
-    public static final String REGEX_GIT_PATH_BOTH = "^/[a-zA-Z0-9\\-]*/[a-zA-Z0-9\\-]*(/tree/[a-zA-Z0-9\\-/]*[a-zA-Z0-9\\-]*)?";
+    public static final String REGEX_GIT_PATH_BOTH = "^\\/[a-zA-Z0-9\\-]*\\/[a-zA-Z0-9\\-]*(\\/tree\\/[a-zA-Z0-9\\-\\/]*[a-zA-Z0-9\\-]*)?";
     public static final String REGEX_GIT_PATH_WITH_BRANCH = "^\\/[a-zA-Z0-9\\-]*\\/[a-zA-Z0-9\\-]*\\/tree\\/[a-zA-Z0-9\\-\\/]*[a-zA-Z0-9\\-]*";
     public static final String REGEX_MASTER_GIT_PATH = "^\\/[a-zA-Z0-9\\-]*\\/[a-zA-Z0-9\\-]*";
 
@@ -36,11 +37,12 @@ public class CloneButtonClickedEventEventHandler implements EventHandler<ActionE
     private final TextField tfShortName;
     private final TextField tfCurrentProjectPath;
     private final TextArea taLogConsole;
-    private final Config config;
+    private Config config;
 
     @Override
     public void handle(ActionEvent event) {
-        tfCurrentProjectPath.setText("");
+        config = readConfig("src/main/resources/config.yml");
+
         final String url = StringUtils.isNotEmpty(tfUrl.getText()) ? tfUrl.getText() : config.getAppConfig().getDefaultRepo();
         final String shortName = StringUtils.isNotEmpty(tfShortName.getText()) ? tfShortName.getText() : config.getAppConfig().getDefaultShortName();
 
@@ -52,7 +54,7 @@ public class CloneButtonClickedEventEventHandler implements EventHandler<ActionE
         final String branchName = repoAndBranch[3];
 
         // Step 2: Clone the repository using the extracted repository name and branch name
-        URL urlGit;
+        URL urlGit = null;
         try {
             urlGit = new URL(url);
         } catch (MalformedURLException e) {
@@ -75,6 +77,17 @@ public class CloneButtonClickedEventEventHandler implements EventHandler<ActionE
         showSuccessMessage();
     }
 
+    protected Config readConfig(String configPath) {
+        Yaml yaml = new Yaml();
+        FileInputStream fileInputStream = null;
+        try {
+            fileInputStream = new FileInputStream(configPath);
+        } catch (FileNotFoundException e) {
+            log.error("Error while reading app config - {}", configPath, e);
+            tfCurrentProjectPath.setText("");
+        }
+        return yaml.loadAs(fileInputStream, Config.class);
+    }
     // Step 1: Extract the repository name and branch name from the URL
     protected String[] extractRepoAndBranch(String url) throws IllegalArgumentException {
         final URI uri = URI.create(url);

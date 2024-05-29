@@ -7,6 +7,8 @@ import com.github.minfaatong.tool.codeworkbench.handler.IDEButtonClickedEventEve
 import com.github.minfaatong.tool.codeworkbench.listener.ProjectPathChangedListener;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -15,29 +17,38 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
-import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.Objects;
+import java.io.File;
+import java.io.IOException;
+
+import static com.github.minfaatong.tool.codeworkbench.utils.NotificationUiUtils.showErrorMessage;
 
 @Slf4j
 public class GitCloneAndOpenProjectFX extends Application {
+
+    private TextField tfUrl;
+    private TextField tfShortName;
+    private TextArea taLogConsole;
+
+    private TextField tfCurrentProjectPath;
+
+    private Config config = null;
+    private Button btnOpenInIDE;
+    private Button btnOpenInTerm;
 
     CloneButtonClickedEventEventHandler cloneButtonClickedEventEventHandler;
 
     @Override
     public void start(Stage primaryStage) {
         log.info("UI Thread - {}", Platform.isFxApplicationThread() ? "UI Thread" : "Background Thread");
-        Config config = readConfig("src/main/resources/config.yml");
 
         primaryStage.setTitle("Git Clone and Open Project");
 
         GridPane grid = new GridPane();
-        TextField tfUrl = new TextField();
-        TextField tfShortName = new TextField();
-        TextField tfCurrentProjectPath = new TextField();
-        TextArea taLogConsole = new TextArea();
+        tfUrl = new TextField();
+        tfShortName = new TextField();
+        tfCurrentProjectPath = new TextField();
+        taLogConsole = new TextArea();
         grid.setPadding(new Insets(8, 8, 8, 8));
         grid.setVgap(5);
         grid.setHgap(5);
@@ -52,11 +63,11 @@ public class GitCloneAndOpenProjectFX extends Application {
         Button btnClone = new Button("Clone");
         GridPane.setConstraints(btnClone, 0, 2);
         cloneButtonClickedEventEventHandler = new CloneButtonClickedEventEventHandler(
-                tfUrl, tfShortName, tfCurrentProjectPath, taLogConsole, config);
+                tfUrl, tfShortName, tfCurrentProjectPath, taLogConsole);
         btnClone.setOnAction(cloneButtonClickedEventEventHandler);
 
-        Button btnOpenInIDE = new Button("IDE");
-        ImageView imgIDE = new ImageView(Objects.requireNonNull(getClass().getResource("fxml/IntelliJ_IDEA_Icon.png")).toString());
+        btnOpenInIDE = new Button("IDE");
+        ImageView imgIDE = new ImageView("IntelliJ_IDEA_Icon.svg.png");
         imgIDE.setFitWidth(30);
         imgIDE.setFitHeight(30);
         btnOpenInIDE.setGraphic(imgIDE);
@@ -67,8 +78,8 @@ public class GitCloneAndOpenProjectFX extends Application {
                 tfCurrentProjectPath,
                 config));
 
-        Button btnOpenInTerm = new Button("TERM");
-        ImageView imgTerm = new ImageView(Objects.requireNonNull(getClass().getResource("fxml/cmd-terminal-icon.png")).toString());
+        btnOpenInTerm = new Button("TERM");
+        ImageView imgTerm = new ImageView("cmd-terminal-icon.png");
         imgTerm.setFitWidth(30);
         imgTerm.setFitHeight(30);
         btnOpenInTerm.setGraphic(imgTerm);
@@ -114,17 +125,6 @@ public class GitCloneAndOpenProjectFX extends Application {
         Scene scene = new Scene(vbox, 800, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
-    }
-
-    protected Config readConfig(String configPath) {
-        Yaml yaml = new Yaml();
-        FileInputStream fileInputStream = null;
-        try {
-            fileInputStream = new FileInputStream(configPath);
-        } catch (FileNotFoundException e) {
-            log.error("Error while reading app config - {}", configPath, e);
-        }
-        return yaml.loadAs(fileInputStream, Config.class);
     }
 
     public static void main(String[] args) {

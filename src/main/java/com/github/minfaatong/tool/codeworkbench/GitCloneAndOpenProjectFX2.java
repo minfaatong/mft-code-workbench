@@ -10,79 +10,76 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
-import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 
 import static com.github.minfaatong.tool.codeworkbench.utils.NotificationUiUtils.showErrorMessage;
 
 @Slf4j
 public class GitCloneAndOpenProjectFX2 extends Application {
-    MainController controller = null;
+
+    private TextField tfUrl;
+    private TextField tfShortName;
+    private TextArea taLogConsole;
+
+    private TextField tfCurrentProjectPath;
+
+    private Config config = null;
+    private Button btnOpenInIDE;
+    private Button btnOpenInTerm;
+
+    private Parent root;
+    private GridPane grid;
 
     CloneButtonClickedEventEventHandler cloneButtonClickedEventEventHandler;
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws IOException {
         log.info("UI Thread - {}", Platform.isFxApplicationThread() ? "UI Thread" : "Background Thread");
 
         try {
-//            URL fxmlUrl = Thread.currentThread().getContextClassLoader().getResource("fxml/git-clone-and-open-project.fxml");
-            URL fxmlUrl = getClass().getResource("fxml/git-clone-and-open-project.fxml");
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(fxmlUrl);
-            Parent root = loader.load();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("git-clone-and-open-project.fxml"));
+            root = loader.load();
+            grid = (GridPane) root.lookup("#grid");
 
-            controller = loader.getController();
-            Config config = readConfig("src/main/resources/config.yml");
-
-            controller.getBtnOpenInIDE().setDisable(true);
-            controller.getBtnOpenInTerm().setDisable(true);
+            tfUrl = (TextField) grid.lookup("#tfUrl");
+            tfShortName = (TextField) grid.lookup("#tfShortName");
+            tfCurrentProjectPath = (TextField) grid.lookup("#tfCurrentProjectPath");
+            taLogConsole = (TextArea) grid.lookup("#taLogConsole");
+            btnOpenInIDE = (Button) grid.lookup("#btnOpenInIDE");
+            btnOpenInTerm = (Button) grid.lookup("#btnOpenInTerm");
+            Button btnClone = (Button) grid.lookup("#btnClone");
 
             cloneButtonClickedEventEventHandler = new CloneButtonClickedEventEventHandler(
-                    controller.getTfUrl(), controller.getTfShortName(),
-                    controller.getTfCurrentProjectPath(),
-                    controller.getTaLogConsole(),
-                    config);
-            controller.getBtnClone().setOnAction(cloneButtonClickedEventEventHandler);
+                    tfUrl, tfShortName, tfCurrentProjectPath, taLogConsole);
+            btnClone.setOnAction(cloneButtonClickedEventEventHandler);
 
-            controller.getBtnOpenInIDE().setOnAction(new IDEButtonClickedEventEventHandler(
+            btnOpenInIDE.setOnAction(new IDEButtonClickedEventEventHandler(
                     cloneButtonClickedEventEventHandler,
-                    controller.getTfCurrentProjectPath(),
-                    config));
-            controller.getBtnOpenInTerm().setOnAction(new CmdButtonClickedEventEventHandler(
-                    cloneButtonClickedEventEventHandler,
-                    controller.getTfCurrentProjectPath(),
+                    tfCurrentProjectPath,
                     config));
 
-            controller.getTfCurrentProjectPath().textProperty().addListener(
-                    new ProjectPathChangedListener(
-                            controller.getBtnOpenInIDE(), controller.getBtnOpenInTerm()));
+            btnOpenInTerm.setOnAction(new CmdButtonClickedEventEventHandler(
+                    cloneButtonClickedEventEventHandler,
+                    tfCurrentProjectPath,
+                    config));
+
+            tfCurrentProjectPath.textProperty().addListener(new ProjectPathChangedListener(
+                    btnOpenInIDE, btnOpenInTerm));
 
             Scene scene = new Scene(root, 800, 600);
             primaryStage.setScene(scene);
             primaryStage.setTitle("Git Clone and Open Project");
             primaryStage.show();
         } catch (IOException e) {
-            log.error("Error while creating form", e);
             showErrorMessage("Error loading FXML file", e);
         }
-    }
-
-    protected Config readConfig(String configPath) {
-        Yaml yaml = new Yaml();
-        FileInputStream fileInputStream = null;
-        try {
-            fileInputStream = new FileInputStream(configPath);
-        } catch (FileNotFoundException e) {
-            log.error("Error while reading app config - {}", configPath, e);
-        }
-        return yaml.loadAs(fileInputStream, Config.class);
     }
 
     public static void main(String[] args) {

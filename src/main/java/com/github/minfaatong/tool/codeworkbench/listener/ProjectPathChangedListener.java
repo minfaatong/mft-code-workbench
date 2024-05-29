@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class ProjectPathChangedListener implements ChangeListener<String> {
-    private final Button[] buttons;
+    private Button[] buttons = null;
 
     public ProjectPathChangedListener(Button... buttons) {
         this.buttons = buttons;
