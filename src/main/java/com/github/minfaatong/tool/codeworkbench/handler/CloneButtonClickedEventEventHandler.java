@@ -1,45 +1,52 @@
 package com.github.minfaatong.tool.codeworkbench.handler;
 
+import com.github.minfaatong.tool.codeworkbench.FolderPrompt;
 import com.github.minfaatong.tool.codeworkbench.config.Config;
+import com.github.minfaatong.tool.codeworkbench.config.ProjectMapConfig;
 import com.github.minfaatong.tool.codeworkbench.utils.FileUtils;
 import com.github.minfaatong.tool.codeworkbench.utils.ProjectMapConfigReader;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
+import static com.github.minfaatong.tool.codeworkbench.FolderPrompt.cancelButton;
+import static com.github.minfaatong.tool.codeworkbench.FolderPrompt.createButton;
+import static com.github.minfaatong.tool.codeworkbench.utils.GitUtils.extractRepoAndBranch;
 import static com.github.minfaatong.tool.codeworkbench.utils.NotificationUiUtils.showErrorMessage;
-import static com.github.minfaatong.tool.codeworkbench.utils.NotificationUiUtils.showSuccessMessage;
+import static com.github.minfaatong.tool.codeworkbench.utils.NotificationUiUtils.showMessage;
+import static com.github.minfaatong.tool.codeworkbench.utils.ProjectMapConfigReader.getProjectConfig;
 
 @Slf4j
 @RequiredArgsConstructor
 public class CloneButtonClickedEventEventHandler implements EventHandler<ActionEvent> {
-    public static final String REGEX_GIT_PATH_BOTH = "^/[a-zA-Z0-9\\-]*/[a-zA-Z0-9\\-]*(/tree/[a-zA-Z0-9\\-/]*[a-zA-Z0-9\\-]*)?";
-    public static final String REGEX_GIT_PATH_WITH_BRANCH = "^\\/[a-zA-Z0-9\\-]*\\/[a-zA-Z0-9\\-]*\\/tree\\/[a-zA-Z0-9\\-\\/]*[a-zA-Z0-9\\-]*";
-    public static final String REGEX_MASTER_GIT_PATH = "^\\/[a-zA-Z0-9\\-]*\\/[a-zA-Z0-9\\-]*";
 
     private final TextField tfUrl;
     private final TextField tfShortName;
     private final TextField tfCurrentProjectPath;
     private final TextArea taLogConsole;
-    private final Config config;
+    private Config config;
 
     @Override
     public void handle(ActionEvent event) {
+        // clear project path
         tfCurrentProjectPath.setText("");
         final String url = StringUtils.isNotEmpty(tfUrl.getText()) ? tfUrl.getText() : config.getAppConfig().getDefaultRepo();
         final String shortName = StringUtils.isNotEmpty(tfShortName.getText()) ? tfShortName.getText() : config.getAppConfig().getDefaultShortName();
@@ -48,70 +55,82 @@ public class CloneButtonClickedEventEventHandler implements EventHandler<ActionE
         final String[] repoAndBranch = extractRepoAndBranch(url);
         final String host = repoAndBranch[0];
         final String orgName = repoAndBranch[1];
+
         final String repoName = repoAndBranch[2];
         final String branchName = repoAndBranch[3];
 
         // Step 2: Clone the repository using the extracted repository name and branch name
-        URL urlGit;
+        URL urlGit = null;
+
         try {
             urlGit = new URL(url);
         } catch (MalformedURLException e) {
             log.error("Error while parsing git branch url", e);
-            throw new RuntimeException(e);
+            showErrorMessage("Git operation error", e);
         }
         final String cloneUrl = String.format("%s://%s/%s/%s.git", urlGit.getProtocol(), urlGit.getHost(), orgName, repoName);
+        log.info("organization name = {}", orgName);
+        log.info("repository name = {}", repoName);
         log.info("git url = {}", cloneUrl);
-        final String gitPath =  ProjectMapConfigReader.deriveLocalGitPathByGitUrl(cloneUrl);
-        final String localPath = ProjectMapConfigReader.deriveLocalWorkingPath(cloneUrl, shortName);
+        String gitPath =  ProjectMapConfigReader.deriveLocalGitPathByGitUrl(cloneUrl);
+        String localPath = ProjectMapConfigReader.deriveLocalWorkingPath(cloneUrl, shortName);
         log.info("git path = {}", gitPath);
-        final String gitClonePath = cloneRepo(gitPath, host, orgName, repoName, branchName, shortName);
-        log.info("working path = {}", localPath);
 
-        // Step 3: Download the project into the specified local path
-        copyProjectToWorkingSpace(gitClonePath, localPath);
-        tfCurrentProjectPath.setText(localPath);
+        if (gitPath == null) {
+            ProjectMapConfig config = getProjectConfig();
+            String gitRootDir = config.getRootDir();
+            String altFolderName = new StringBuffer(gitRootDir).append("/")
+                    .append(orgName).append("/")
+                    .append(repoName).append("/")
+                    .append("br").toString();
+            gitPath = altFolderName;
+            log.info("git path = '{}' (proposed)", altFolderName);
 
-        // Show success message
-        showSuccessMessage();
+            String promptMsg = String.format("Git project not exists, create one instead? '%s'", altFolderName);
+            Alert gitFolderPrompt = FolderPrompt.showFolderPrompt(promptMsg, altFolderName);
+
+            Optional<ButtonType> result = gitFolderPrompt.showAndWait();
+            if (result.orElse(cancelButton) == createButton) {
+                java.io.File dir = new java.io.File(altFolderName);
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                    log.info("git path '{}' created", gitPath);
+                }
+            }
+        }
+
+        if (localPath == null) {
+            ProjectMapConfig config = getProjectConfig();
+            String workDir = config.getWorkDir();
+            String altFolderName = new StringBuffer(workDir).append("/")
+                    .append(repoName).append("_").append(shortName).toString();
+            localPath = altFolderName;
+            log.info("working path = '{}' (proposed)", altFolderName);
+        }
+
+        try {
+            verifyShortNameNotExists(String.format("%s/%s", gitPath, shortName), localPath);
+            final String gitClonePath = cloneRepo(gitPath, host, orgName, repoName, branchName, shortName);
+            log.info("working path = {}", localPath);
+
+            // Step 3: Download the project into the specified local path
+            copyProjectToWorkingSpace(gitClonePath, localPath);
+            tfCurrentProjectPath.setText(localPath);
+
+            // Show success message
+            showMessage(null, "Project cloned and opened successfully!");
+        } catch (IllegalArgumentException e) {
+            showErrorMessage("Validation Error", e);
+        }
     }
 
-    // Step 1: Extract the repository name and branch name from the URL
-    protected String[] extractRepoAndBranch(String url) throws IllegalArgumentException {
-        final URI uri = URI.create(url);
-        final Pattern patternGitPathBoth = Pattern.compile(REGEX_GIT_PATH_BOTH);
-        if (!patternGitPathBoth.matcher(uri.getPath()).find()) {
-            throw new IllegalArgumentException(String.format("not expected git path passed - %s", uri.getPath()));
+    private void verifyShortNameNotExists(String gitPath, String localPath) throws IllegalArgumentException {
+        if (Files.exists(Path.of(gitPath))) {
+            throw new IllegalArgumentException(String.format("Git path '%s' already exists, choose another short name", gitPath));
         }
-        final String[] parts = uri.getPath().split("/");
-        final String flattenParts = Arrays.stream(parts).collect(Collectors.joining(",", "[", "]"));
-        log.info("schema={}, host={}, port={}, path={}, path.split={}",
-                uri.getScheme(),
-                uri.getHost(),
-                uri.getPort(),
-                uri.getPath(),
-                flattenParts);
-
-        final String host = uri.getHost();
-        final String orgName = parts[1];
-        final String repoName = parts[2];
-        final Pattern patternGitPathWithBranch = Pattern.compile(REGEX_GIT_PATH_WITH_BRANCH);
-        final Pattern patternMasterGitPath = Pattern.compile(REGEX_MASTER_GIT_PATH);
-        final boolean isPathWithBranch = patternGitPathWithBranch.matcher(uri.getPath()).find();
-        final boolean isMasterPath = patternMasterGitPath.matcher(uri.getPath()).find();
-
-        String branchName = null;
-        if (isPathWithBranch) {
-            branchName = uri.getPath().replace(
-                    String.format("/%s/%s/tree/", orgName, repoName), "");
+        if (Files.exists(Path.of(localPath))) {
+            throw new IllegalArgumentException(String.format("Working path '%s' already exists, choose another short name", localPath));
         }
-        if (isMasterPath) {
-            branchName = "master";
-        }
-        if (StringUtils.isEmpty(branchName)) {
-            branchName = "master";
-        }
-
-        return new String[] { host, orgName, repoName, branchName };
     }
 
     // Step 2: Clone the repository using the extracted repository name and branch name
@@ -132,6 +151,7 @@ public class CloneButtonClickedEventEventHandler implements EventHandler<ActionE
             final int exitCode = process.waitFor();
             if (exitCode != 0) {
                 log.error("command exit abnormally with code {}", exitCode);
+                throw new IllegalStateException(String.format("Failure to clone git repo with exist code - %d", exitCode));
             }
         } catch (IOException e) {
             log.error("Error while git cloning repository \"{}\"",
@@ -164,6 +184,7 @@ public class CloneButtonClickedEventEventHandler implements EventHandler<ActionE
             showErrorMessage("Error copy project", e);
         }
     }
+
     public void printProcessOutput(Process process) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String line;
