@@ -151,7 +151,7 @@ public class CloneButtonClickedEventEventHandler implements EventHandler<ActionE
             final int exitCode = process.waitFor();
             if (exitCode != 0) {
                 log.error("command exit abnormally with code {}", exitCode);
-                throw new IllegalStateException(String.format("Failure to clone git repo with exist code - %d", exitCode));
+                throw new IllegalStateException(String.format("Failure to run git clone repo command with exit code - %d", exitCode));
             }
         } catch (IOException e) {
             log.error("Error while git cloning repository \"{}\"",
