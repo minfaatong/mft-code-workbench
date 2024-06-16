@@ -1,0 +1,7 @@
+appConfig:
+  gitPath: ''
+  workingPath: ''
+  defaultRepo: ''
+  defaultShortName: ''
+  ideExePath: ''
+  terminalExePath: ''
