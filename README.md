@@ -1,5 +1,5 @@
 # my-code-aassistant
 
-[![Maven Package](https://github.com/minfaatong/my-code-aassistant/actions/workflows/maven-publish.yml/badge.svg?branch=master)](https://github.com/minfaatong/my-code-aassistant/actions/workflows/maven-publish.yml)
+[![Java CI with Maven](https://github.com/minfaatong/mft-code-workbench/actions/workflows/maven.yml/badge.svg)](https://github.com/minfaatong/mft-code-workbench/actions/workflows/maven.yml)
 
 my code assistant
