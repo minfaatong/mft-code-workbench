@@ -11,7 +11,7 @@ import java.io.*;
 
 @Slf4j
 public class ProjectMapConfigReader {
-    private ProjectMapConfig projCfg;
+    private final ProjectMapConfig projCfg;
 
     public ProjectMapConfigReader() {
         projCfg = readConfig("src/main/resources/project-config.json");
@@ -53,9 +53,8 @@ public class ProjectMapConfigReader {
     public static String deriveLocalWorkingPath(String gitUrl, String shortName) {
         for (ProjectMapConfig.ProjectMapSubDir parent : _INSTANCE.projCfg.getSubDir()) {
             for (ProjectMapConfig.ProjectMapSubDirChild child : parent.getChildren()) {
-                if (gitUrl.equals(child.getGitUrl())) {
+                if (gitUrl.equals(child.getGitUrl()))
                     return new StringBuffer(_INSTANCE.projCfg.getWorkDir()).append("/").append(child.getFolderPrefix()).append("_").append(shortName).toString();
-                }
             }
         }
         return null;

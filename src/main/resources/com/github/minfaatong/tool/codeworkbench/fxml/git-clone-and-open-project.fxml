@@ -7,7 +7,6 @@
 
 <VBox xmlns="http://javafx.com/javafx/11.0.14-internal"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:id="rootVBox"
       fx:controller="com.github.minfaatong.tool.codeworkbench.MainController">
     <MenuBar>
         <Menu text="File">
@@ -15,51 +14,48 @@
         </Menu>
     </MenuBar>
     <GridPane fx:id="grid" hgap="5.0" vgap="5.0">
-<!--        <columnConstraints>-->
-<!--            <ColumnConstraints />-->
-<!--            <ColumnConstraints />-->
-<!--            <ColumnConstraints />-->
-<!--            <ColumnConstraints />-->
-<!--        </columnConstraints>-->
-<!--        <rowConstraints>-->
-<!--            <RowConstraints />-->
-<!--            <RowConstraints />-->
-<!--            <RowConstraints />-->
-<!--            <RowConstraints />-->
-<!--            <RowConstraints />-->
-<!--            <RowConstraints />-->
-<!--        </rowConstraints>-->
-        <children>
-            <Label text="URL:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-            <TextField fx:id="tfUrl" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-            <Label text="Shortname:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <TextField fx:id="tfShortName" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Button fx:id="btnClone" text="Clone" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-            <Button fx:id="btnOpenInIDE" GridPane.columnIndex="2" GridPane.rowIndex="3">
-                <graphic>
-                    <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
-                        <image>
-                            <Image url="@IntelliJ_IDEA_Icon.png" />
-                        </image>
-                    </ImageView>
-                </graphic>
-            </Button>
-            <Button fx:id="btnOpenInTerm" GridPane.columnIndex="3" GridPane.rowIndex="3">
-                <graphic>
-                    <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
-                        <image>
-                            <Image url="@cmd-terminal-icon.png" />
-                        </image>
-                    </ImageView>
-                </graphic>
-            </Button>
-            <Label text="Current Project:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-            <TextField fx:id="tfCurrentProjectPath" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <Label text="Console:" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <TextArea fx:id="taLogConsole" editable="false" minHeight="200.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-        </children>
+        <!--        <columnConstraints>-->
+        <!--            <ColumnConstraints />-->
+        <!--            <ColumnConstraints />-->
+        <!--            <ColumnConstraints />-->
+        <!--            <ColumnConstraints />-->
+        <!--        </columnConstraints>-->
+        <!--        <rowConstraints>-->
+        <!--            <RowConstraints />-->
+        <!--            <RowConstraints />-->
+        <!--            <RowConstraints />-->
+        <!--            <RowConstraints />-->
+        <!--            <RowConstraints />-->
+        <!--            <RowConstraints />-->
+        <!--        </rowConstraints>-->
         <padding>
-            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0"/>
         </padding>
+        <Label text="URL:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="tfUrl" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Label text="Shortname:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <TextField fx:id="tfShortName" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Button fx:id="btnClone" text="Clone" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <Button fx:id="btnOpenInIDE" GridPane.columnIndex="2" GridPane.rowIndex="3">
+            <graphic>
+                <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@IntelliJ_IDEA_Icon.png"/>
+                    </image>
+                </ImageView>
+            </graphic>
+        </Button>
+        <Button fx:id="btnOpenInTerm" GridPane.columnIndex="3" GridPane.rowIndex="3">
+            <graphic>
+                <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@cmd-terminal-icon.png"/>
+                </ImageView>
+            </graphic>
+        </Button>
+        <Label text="Current Project:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <TextField fx:id="tfCurrentProjectPath" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <Label text="Console:" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        <TextArea fx:id="taLogConsole" editable="false" minHeight="200.0" wrapText="true" GridPane.columnIndex="1"
+                  GridPane.rowIndex="5"/>
     </GridPane>
 </VBox>
