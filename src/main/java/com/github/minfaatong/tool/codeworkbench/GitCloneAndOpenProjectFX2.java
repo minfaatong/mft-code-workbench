@@ -4,7 +4,9 @@ import com.github.minfaatong.tool.codeworkbench.config.Config;
 import com.github.minfaatong.tool.codeworkbench.handler.CloneButtonClickedEventEventHandler;
 import com.github.minfaatong.tool.codeworkbench.handler.CmdButtonClickedEventEventHandler;
 import com.github.minfaatong.tool.codeworkbench.handler.IDEButtonClickedEventEventHandler;
+import com.github.minfaatong.tool.codeworkbench.listener.GitUrlParserListener;
 import com.github.minfaatong.tool.codeworkbench.listener.ProjectPathChangedListener;
+import com.github.minfaatong.tool.codeworkbench.listener.URLChangeListener;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -12,6 +14,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileInputStream;
@@ -22,7 +25,7 @@ import java.net.URL;
 import static com.github.minfaatong.tool.codeworkbench.utils.NotificationUiUtils.showErrorMessage;
 
 @Slf4j
-public class GitCloneAndOpenProjectFX2 extends Application {
+public class GitCloneAndOpenProjectFX2 extends Application implements GitUrlParserListener {
     MainController controller = null;
 
     CloneButtonClickedEventEventHandler cloneButtonClickedEventEventHandler;
@@ -41,14 +44,15 @@ public class GitCloneAndOpenProjectFX2 extends Application {
             controller = loader.getController();
             Config config = readConfig("src/main/resources/config.yml");
 
+            controller.getTfUrl().textProperty().addListener(new URLChangeListener(this));
+
             controller.getBtnOpenInIDE().setDisable(true);
             controller.getBtnOpenInTerm().setDisable(true);
 
             cloneButtonClickedEventEventHandler = new CloneButtonClickedEventEventHandler(
                     controller.getTfUrl(), controller.getTfShortName(),
                     controller.getTfCurrentProjectPath(),
-                    controller.getTaLogConsole(),
-                    config);
+                    controller.getTaLogConsole());
             controller.getBtnClone().setOnAction(cloneButtonClickedEventEventHandler);
 
             controller.getBtnOpenInIDE().setOnAction(new IDEButtonClickedEventEventHandler(
@@ -87,5 +91,13 @@ public class GitCloneAndOpenProjectFX2 extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    @Override
+    public void gitUrlParsed(String host, String organization, String repository, String branch, String shortName) {
+        log.info("branch='{}', shortName='{}'", branch, shortName);
+        if (StringUtils.isEmpty(controller.getTfShortName().getText())) {
+            controller.getTfShortName().setText(shortName);
+        }
     }
 }

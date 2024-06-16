@@ -52,7 +52,7 @@ public class GitCloneAndOpenProjectFX extends Application {
         Button btnClone = new Button("Clone");
         GridPane.setConstraints(btnClone, 0, 2);
         cloneButtonClickedEventEventHandler = new CloneButtonClickedEventEventHandler(
-                tfUrl, tfShortName, tfCurrentProjectPath, taLogConsole, config);
+                tfUrl, tfShortName, tfCurrentProjectPath, taLogConsole);
         btnClone.setOnAction(cloneButtonClickedEventEventHandler);
 
         Button btnOpenInIDE = new Button("IDE");
