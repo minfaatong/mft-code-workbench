@@ -12,7 +12,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
+import org.yaml.snakeyaml.Yaml;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 
@@ -20,15 +23,12 @@ import static com.github.minfaatong.tool.codeworkbench.utils.NotificationUiUtils
 
 @Slf4j
 public class GitCloneAndOpenProjectFX2 extends Application {
-    private Parent root;
-
-    private Config config = null;
     MainController controller = null;
 
     CloneButtonClickedEventEventHandler cloneButtonClickedEventEventHandler;
 
     @Override
-    public void start(Stage primaryStage) throws IOException {
+    public void start(Stage primaryStage) {
         log.info("UI Thread - {}", Platform.isFxApplicationThread() ? "UI Thread" : "Background Thread");
 
         try {
@@ -36,9 +36,10 @@ public class GitCloneAndOpenProjectFX2 extends Application {
             URL fxmlUrl = getClass().getResource("fxml/git-clone-and-open-project.fxml");
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(fxmlUrl);
-            root = loader.load();
+            Parent root = loader.load();
 
             controller = loader.getController();
+            Config config = readConfig("src/main/resources/config.yml");
 
             controller.getBtnOpenInIDE().setDisable(true);
             controller.getBtnOpenInTerm().setDisable(true);
@@ -46,7 +47,8 @@ public class GitCloneAndOpenProjectFX2 extends Application {
             cloneButtonClickedEventEventHandler = new CloneButtonClickedEventEventHandler(
                     controller.getTfUrl(), controller.getTfShortName(),
                     controller.getTfCurrentProjectPath(),
-                    controller.getTaLogConsole());
+                    controller.getTaLogConsole(),
+                    config);
             controller.getBtnClone().setOnAction(cloneButtonClickedEventEventHandler);
 
             controller.getBtnOpenInIDE().setOnAction(new IDEButtonClickedEventEventHandler(
@@ -70,6 +72,17 @@ public class GitCloneAndOpenProjectFX2 extends Application {
             log.error("Error while creating form", e);
             showErrorMessage("Error loading FXML file", e);
         }
+    }
+
+    protected Config readConfig(String configPath) {
+        Yaml yaml = new Yaml();
+        FileInputStream fileInputStream = null;
+        try {
+            fileInputStream = new FileInputStream(configPath);
+        } catch (FileNotFoundException e) {
+            log.error("Error while reading app config - {}", configPath, e);
+        }
+        return yaml.loadAs(fileInputStream, Config.class);
     }
 
     public static void main(String[] args) {
