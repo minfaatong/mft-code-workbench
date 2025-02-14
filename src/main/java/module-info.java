@@ -11,7 +11,7 @@ module codeworkbench {
     opens com.github.minfaatong.tool.codeworkbench to javafx.fxml;
     opens com.github.minfaatong.tool.codeworkbench.config to com.google.gson;
 
-   opens com.github.minfaatong.tool.codegenerator to javafx.fxml;
+//   opens com.github.minfaatong.tool.codegenerator to javafx.fxml;
 //           javafx.application.Application;
 //import javafx.scene.Group;
 //import javafx.scene.Scene;
@@ -23,5 +23,5 @@ module codeworkbench {
     exports com.github.minfaatong.tool.codeworkbench.utils;
     exports com.github.minfaatong.tool.codeworkbench.listener;
 
-    exports com.github.minfaatong.tool.codegenerator;
+//    exports com.github.minfaatong.tool.codegenerator;
 }
