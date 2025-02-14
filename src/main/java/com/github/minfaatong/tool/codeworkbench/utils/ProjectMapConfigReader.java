@@ -1,6 +1,7 @@
 
 package com.github.minfaatong.tool.codeworkbench.utils;
 
+import com.github.minfaatong.tool.codeworkbench.config.Config;
 import com.github.minfaatong.tool.codeworkbench.config.ProjectMapConfig;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
@@ -57,6 +58,10 @@ public class ProjectMapConfigReader {
                     return new StringBuffer(_INSTANCE.projCfg.getWorkDir()).append("/").append(child.getFolderPrefix()).append("_").append(shortName).toString();
             }
         }
+        return null;
+    }
+
+    public static Config readAppConfig(String path) throws FileNotFoundException {
         return null;
     }
 }

@@ -1,0 +1,7 @@
+#textAreaField {
+    -fx-font-size: 12px;
+    -fx-control-inner-background: #000000;
+    -fx-font-family: monospace;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #FF0000;
+}

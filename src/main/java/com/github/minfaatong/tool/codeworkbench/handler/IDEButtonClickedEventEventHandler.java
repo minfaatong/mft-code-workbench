@@ -3,20 +3,22 @@ package com.github.minfaatong.tool.codeworkbench.handler;
 import com.github.minfaatong.tool.codeworkbench.config.Config;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
+import static com.github.minfaatong.tool.codeworkbench.utils.GuiUtils.printProcessOutput;
 import static com.github.minfaatong.tool.codeworkbench.utils.NotificationUiUtils.showErrorMessage;
 
 @Slf4j
 @RequiredArgsConstructor
 public class IDEButtonClickedEventEventHandler implements EventHandler<ActionEvent> {
-    final CloneButtonClickedEventEventHandler cloneButtonClickedEventEventHandler;
     final TextField tfCurrentProjectPath;
     final Config config;
+    private final TextArea taLogConsole;
 
     @Override
     public void handle(ActionEvent actionEvent) {
@@ -31,7 +33,7 @@ public class IDEButtonClickedEventEventHandler implements EventHandler<ActionEve
             final String command = String.format("\"%s\" %s", ideExecutablePath, localPath);
             Process process = Runtime.getRuntime().exec(command);
 
-            cloneButtonClickedEventEventHandler.printProcessOutput(process);
+            printProcessOutput(process, taLogConsole);
 
             final int exitCode = process.waitFor();
             if (exitCode != 0) {
