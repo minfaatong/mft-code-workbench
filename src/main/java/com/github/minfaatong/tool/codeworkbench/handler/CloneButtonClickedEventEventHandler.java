@@ -5,7 +5,6 @@ import com.github.minfaatong.tool.codeworkbench.config.Config;
 import com.github.minfaatong.tool.codeworkbench.config.ProjectMapConfig;
 import com.github.minfaatong.tool.codeworkbench.utils.FileUtils;
 import com.github.minfaatong.tool.codeworkbench.utils.ProjectMapConfigReader;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
@@ -16,10 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -30,6 +27,7 @@ import java.util.Optional;
 import static com.github.minfaatong.tool.codeworkbench.FolderPrompt.cancelButton;
 import static com.github.minfaatong.tool.codeworkbench.FolderPrompt.createButton;
 import static com.github.minfaatong.tool.codeworkbench.utils.GitUtils.extractRepoAndBranch;
+import static com.github.minfaatong.tool.codeworkbench.utils.GuiUtils.printProcessOutput;
 import static com.github.minfaatong.tool.codeworkbench.utils.NotificationUiUtils.showErrorMessage;
 import static com.github.minfaatong.tool.codeworkbench.utils.NotificationUiUtils.showMessage;
 import static com.github.minfaatong.tool.codeworkbench.utils.ProjectMapConfigReader.getProjectConfig;
@@ -91,7 +89,7 @@ public class CloneButtonClickedEventEventHandler implements EventHandler<ActionE
 
             Optional<ButtonType> result = gitFolderPrompt.showAndWait();
             if (result.orElse(cancelButton) == createButton) {
-                java.io.File dir = new java.io.File(altFolderName);
+                File dir = new File(altFolderName);
                 if (!dir.exists()) {
                     dir.mkdirs();
                     log.info("git path '{}' created", gitPath);
@@ -124,29 +122,29 @@ public class CloneButtonClickedEventEventHandler implements EventHandler<ActionE
         }
     }
 
-    private void verifyShortNameNotExists(String gitPath, String localPath) throws IllegalArgumentException {
-        if (Files.exists(Path.of(gitPath))) {
-            throw new IllegalArgumentException(String.format("Git path '%s' already exists, choose another short name", gitPath));
-        }
-        if (Files.exists(Path.of(localPath))) {
-            throw new IllegalArgumentException(String.format("Working path '%s' already exists, choose another short name", localPath));
-        }
-    }
+            private void verifyShortNameNotExists(String gitPath, String localPath) throws IllegalArgumentException {
+                if (Files.exists(Path.of(gitPath))) {
+                    throw new IllegalArgumentException(String.format("Git path '%s' already exists, choose another short name", gitPath));
+                }
+                if (Files.exists(Path.of(localPath))) {
+                    throw new IllegalArgumentException(String.format("Working path '%s' already exists, choose another short name", localPath));
+                }
+            }
 
-    // Step 2: Clone the repository using the extracted repository name and branch name
-    protected String cloneRepo(String gitPath, String gitHost, String orgName, String repoName, String branchName, String shortName) {
-        final String cloneUrl = String.format("git@%s:%s/%s.git", gitHost, orgName, repoName);
-        File workingDir;
-        ProcessBuilder pb = null;
+            // Step 2: Clone the repository using the extracted repository name and branch name
+            protected String cloneRepo(String gitPath, String gitHost, String orgName, String repoName, String branchName, String shortName) {
+                final String cloneUrl = String.format("git@%s:%s/%s.git", gitHost, orgName, repoName);
+                File workingDir;
+                ProcessBuilder pb = null;
 
-        try {
-            workingDir = new File(gitPath);
-            pb = new ProcessBuilder("git", "clone", "--filter=blob:none", cloneUrl, "-b", branchName, shortName);
-            pb.directory(workingDir);
-            pb.redirectErrorStream(true);
-            Process process = pb.start();
+                try {
+                    workingDir = new File(gitPath);
+                    pb = new ProcessBuilder("git", "clone", "--filter=blob:none", cloneUrl, "-b", branchName, shortName);
+                    pb.directory(workingDir);
+                    pb.redirectErrorStream(true);
+                    Process process = pb.start();
 
-            printProcessOutput(process);
+            printProcessOutput(process, taLogConsole);
 
             final int exitCode = process.waitFor();
             if (exitCode != 0) {
@@ -182,16 +180,6 @@ public class CloneButtonClickedEventEventHandler implements EventHandler<ActionE
                     sourcePath, destPath, e);
             tfCurrentProjectPath.setText("");
             showErrorMessage("Error copy project", e);
-        }
-    }
-
-    public void printProcessOutput(Process process) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            log.info(line);
-            final String finalLine = line;
-            Platform.runLater(()-> taLogConsole.appendText(System.lineSeparator() + finalLine));
         }
     }
 }

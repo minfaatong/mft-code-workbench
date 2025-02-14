@@ -18,5 +18,8 @@ public class Config {
         String defaultShortName;
         String ideExePath;
         String terminalExePath;
+        String toolchainPath;
+        String trustStorePath;
+        String trustStorePass;
     }
 }
